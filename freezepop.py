@@ -24,10 +24,10 @@ from hashlib import md5
 
 def main():
     """
-    Freeze Vaccinate Your Doctors and resync S3 staging/prod stores.
+    Freeze flask site and resync S3 staging/prod stores.
     """
 
-    parser = argparse.ArgumentParser(description='The Vaccinate Your Doctors S3/AWS management script.')
+    parser = argparse.ArgumentParser(description='Frozen-Flask & S3/CloudFront syncing script.')
 
     parser.add_argument('--test', '-t', action='store_true', default=False,
                         dest='freeze_only',
@@ -60,9 +60,9 @@ def main():
         # Some flag constraints.
         assert((args.deploy and not args.freeze_only) or (args.freeze_only and not args.no_freeze))
 
-        # Freeze Vaccinate Your Doctors
+        # Freeze your app
         # Per internal app configs, these make "frozen" static copies of these apps in:
-        #    ./vyd_frozen/
+        #    ./flask_frozen/
         if not args.no_freeze:
             print("Freezing Vaccinate Your Doctors app ...")
             print("*** Look for errors here ***")
