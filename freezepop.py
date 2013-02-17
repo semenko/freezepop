@@ -96,13 +96,18 @@ def main():
             app = imp.load_source('app', 'app.py')
             frozen_app = Freezer(app.app)
 
-            # Targets required for URL generators for Flask static.
-            targets = app.targets
 
-            @frozen_app.register_generator
-            def localized_branding():
-                for target in targets:
-                    yield {'target': target}
+            try:
+                # Targets required for URL generators for Flask static.
+                targets = app.targets
+
+                @frozen_app.register_generator
+                def localized_branding():
+                    for target in targets:
+                        yield {'target': target}
+            except AttributeError:
+                pass
+
 
             frozen_app.freeze()
             print("")
