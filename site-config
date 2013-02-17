@@ -1,0 +1,12 @@
+[aws_key]
+aws-key-id = KEY_ID
+
+[prod_site]
+s3_bucket = prod.example.com
+cloudfront_endpoint = endpoint.cloudfront.net
+
+[staging_site]
+s3_bucket = staging.example.com
+
+[cache_settings]
+something = goeshere
