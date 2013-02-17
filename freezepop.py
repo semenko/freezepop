@@ -113,7 +113,7 @@ def main():
         time.sleep(1)
 
         print('*** Minifying results, including JS and CSS.')
-        subprocess.call(['java', '-jar', 'htmlcompressor-1.5.3.jar', '--recursive',
+        subprocess.call(['java', '-jar', '.bin/htmlcompressor-1.5.3.jar', '--recursive',
                          '--compress-js', '--compress-css',                 # Compress CSS and JS
                          '--remove-script-attr', '--remove-style-attr',     # Remove unnecessary attributes
                          'app_frozen/', '-o', 'app_frozen/'])
@@ -125,7 +125,7 @@ def main():
             conn = S3Connection()
 
             # Deploy: (conn, frozen_path, remote_bucket)
-            deploy_to_s3(conn, 'app_frozen', CONF['prod_s3_bucket'], args.no_delete, args.overwrite_all)
+            deploy_to_s3(conn, 'app_frozen', CONFIG['prod_s3_bucket'], args.no_delete, args.overwrite_all)
             time.sleep(1)
 
         print('\nAll done!')
