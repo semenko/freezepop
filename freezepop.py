@@ -7,6 +7,7 @@
 """ Auto-deploy Frozen Flask sites to S3-backed CloudFront. """
 
 import argparse
+import codecs
 import gzip
 import imp
 import os
@@ -18,8 +19,35 @@ import time
 from base64 import b64encode
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
+from ConfigParser import SafeConfigParser
 from flask_frozen import Freezer
 from hashlib import md5
+
+
+CONFIG = {}
+parser = SafeConfigParser()
+with codecs.open('site-config', 'r', encoding='utf-8') as f:
+    parser.readfp(f)
+    
+# AWS key-id
+CONFIG['aws_key_id'] = parser.get('aws_key', 'aws_key_id')
+
+# Prod settings
+CONFIG['prod_s3_bucket'] = parser.get('prod_site', 's3_bucket')
+CONFIG['prod_cloudfront_endpoint'] = parser.get('prod_site', 'cloudfront_endpoint')
+
+# Staging settings
+CONFIG['staging_s3_bucket'] = parser.get('staging_site', 's3_bucket')
+
+# Cache TTL settings
+CONFIG['cache_png'] = parser.get('cache_settings', 'png')
+CONFIG['cache_jpg'] = parser.get('cache_settings', 'jpg')
+CONFIG['cache_js'] = parser.get('cache_settings', 'js')
+CONFIG['cache_css'] = parser.get('cache_settings', 'css')
+CONFIG['cache_html'] = parser.get('cache_settings', 'html')
+CONFIG['cache_ico'] = parser.get('cache_settings', 'ico')
+CONFIG['cache_txt'] = parser.get('cache_settings', 'txt')
+CONFIG['cache_default'] = parser.get('cache_settings', 'default')
 
 
 def main():
@@ -51,9 +79,8 @@ def main():
 
     args = parser.parse_args()
 
-    # Special IAM user: vyd-deploy-bot
     with open('.awskey', 'r') as secret_key:
-        os.environ['AWS_ACCESS_KEY_ID'] = 'AKIAJB3TQFWKVRVAV46Q'
+        os.environ['AWS_ACCESS_KEY_ID'] = CONFIG['aws_key_id']
         os.environ['AWS_SECRET_ACCESS_KEY'] = secret_key.readline()
 
     if args.deploy or args.freeze_only:
@@ -98,7 +125,7 @@ def main():
             conn = S3Connection()
 
             # Deploy: (conn, frozen_path, remote_bucket)
-            deploy_to_s3(conn, 'app_frozen', 'prod.vaccinateyourdoctors.org', args.no_delete, args.overwrite_all)
+            deploy_to_s3(conn, 'app_frozen', CONF['prod_s3_bucket'], args.no_delete, args.overwrite_all)
             time.sleep(1)
 
         print('\nAll done!')
@@ -167,14 +194,14 @@ def deploy_to_s3(conn, frozen_path, bucket_name, no_delete, overwrite_all):
             upload_pending.add(filename)
 
     # TODO: Make these much higher when we have good versioning set up.
-    cache_times = {'.png': '2628000',  # 1 month
-                   '.jpg': '2628000',  # 1 month
-                   '.js': '86400',     # 1 day
-                   '.css': '86400',    # 1 day
-                   '.html': '28800',   # 8 hours
-                   '.ico': '604800',   # 1 week
-                   '.txt': '604800',   # 1 week
-                   '_DEFAULT_': '86400'
+    cache_times = {'.png': CONFIG['cache_png'],
+                   '.jpg': CONFIG['cache_jpg'],
+                   '.js': CONFIG['cache_js'],
+                   '.css': CONFIG['cache_css'],
+                   '.html': CONFIG['cache_html'],
+                   '.ico': CONFIG['cache_ico'],
+                   '.txt': CONFIG['cache_txt'],
+                   '_DEFAULT_': CONFIG['cache_default'],
                    }
 
     def get_headers(filename, extn):
