@@ -9,7 +9,7 @@ This tiny tool will automagically:
 ## Overview
 
 0. Copy (symlink + gitignore?) `freezepop.py` and `.bin/` to your repository.
-1. Add your site config to site-config
+1. Add your site config to .site-config
 2. Add .awskey to .gitignore
 3. Create an .awskey file containing your private aws key (make sure it is not committed!)
 

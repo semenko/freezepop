@@ -26,18 +26,13 @@ from hashlib import md5
 
 CONFIG = {}
 parser = SafeConfigParser()
-with codecs.open('site-config', 'r', encoding='utf-8') as f:
+with codecs.open('.site-config', 'r', encoding='utf-8') as f:
     parser.readfp(f)
-    
-# AWS key-id
-CONFIG['aws_key_id'] = parser.get('aws_key', 'aws_key_id')
 
-# Prod settings
-CONFIG['prod_s3_bucket'] = parser.get('prod_site', 's3_bucket')
-CONFIG['prod_cloudfront_endpoint'] = parser.get('prod_site', 'cloudfront_endpoint')
-
-# Staging settings
-CONFIG['staging_s3_bucket'] = parser.get('staging_site', 's3_bucket')
+CONFIG['aws_key_id'] = parser.get('general', 'aws_key_id')
+CONFIG['prod_s3_bucket'] = parser.get('general', 'prod_s3_bucket')
+CONFIG['staging_s3_bucket'] = parser.get('general', 'staging_s3_bucket')
+#CONFIG['prod_cloudfront_endpoint'] = parser.get('prod_site', 'cloudfront_endpoint')
 
 # Cache TTL settings
 CONFIG['cache_png'] = parser.get('cache_settings', 'png')
@@ -121,7 +116,7 @@ def main():
         subprocess.call(['java', '-jar', '.bin/htmlcompressor-1.5.3.jar', '--recursive',
                          '--compress-js', '--compress-css',                 # Compress CSS and JS
                          '--remove-script-attr', '--remove-style-attr',     # Remove unnecessary attributes
-                         'app_frozen/', '-o', 'app_frozen/'])
+                         '.app_frozen/', '-o', '.app_frozen/'])
 
         # Push the frozen apps above to S3, if we want.
         if args.deploy:
@@ -130,7 +125,7 @@ def main():
             conn = S3Connection()
 
             # Deploy: (conn, frozen_path, remote_bucket)
-            deploy_to_s3(conn, 'app_frozen', CONFIG['prod_s3_bucket'], args.no_delete, args.overwrite_all)
+            deploy_to_s3(conn, '.app_frozen', CONFIG['prod_s3_bucket'], args.no_delete, args.overwrite_all)
             time.sleep(1)
 
         print('\nAll done!')
