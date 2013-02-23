@@ -82,6 +82,17 @@ def main():
         # Some flag constraints.
         assert((args.deploy and not args.freeze_only) or (args.freeze_only and not args.no_freeze))
 
+        # Find the current git branch:
+        #  master -> staging
+        #  prod -> prod
+        current_branch = subprocess.check_output(['git', 'rev-parse', '--abbrev-ref', 'HEAD']).strip()
+        if current_branch == "master":
+            print("Working in staging (your current git branch is: master)")
+        elif current_branch == "prod":
+            print("Working on **prod** (your current git branch is: prod)")
+        else:
+            raise Exception('Unknown branch! Cannot deploy.')
+
         # Freeze your app
         # Per internal app configs, these make "frozen" static copies of these apps in:
         #    ./flask_frozen/
@@ -120,12 +131,21 @@ def main():
 
         # Push the frozen apps above to S3, if we want.
         if args.deploy:
+            if current_branch == "master":
+                active_bucket = CONFIG['staging_s3_bucket']
+            elif current_branch == "prod":
+                active_bucket = CONFIG['prod_s3_bucket']
+            else:
+                # We did this above, but just in case.
+                raise Exception('Unknown git branch!')
+
             #### Connect to S3
             print('Connecting to AWS...\n')
             conn = S3Connection()
 
+
             # Deploy: (conn, frozen_path, remote_bucket)
-            deploy_to_s3(conn, '.app_frozen', CONFIG['prod_s3_bucket'], args.no_delete, args.overwrite_all)
+            deploy_to_s3(conn, '.app_frozen', active_bucket, args.no_delete, args.overwrite_all)
             time.sleep(1)
 
         print('\nAll done!')
