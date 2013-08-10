@@ -213,7 +213,6 @@ def deploy_to_s3(conn, frozen_path, bucket_name, no_delete, overwrite_all):
             # NOTE: AWS overwrites uploads, so no need to delete first.
             upload_pending.add(filename)
 
-    # TODO: Make these much higher when we have good versioning set up.
     cache_times = {'.png': CONFIG['cache_png'],
                    '.jpg': CONFIG['cache_jpg'],
                    '.js': CONFIG['cache_js'],
@@ -228,7 +227,7 @@ def deploy_to_s3(conn, frozen_path, bucket_name, no_delete, overwrite_all):
         headers = {}
         exp_seconds = cache_times.get(extn, cache_times['_DEFAULT_'])
 
-        headers['Cache-control'] = 'public, max-age=' + exp_seconds
+        headers['Cache-Control'] = 'public, max-age=' + str(exp_seconds)
 
         # Security-related headers
         if extn in {'.html'}:
