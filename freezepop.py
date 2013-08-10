@@ -249,6 +249,7 @@ def deploy_to_s3(conn, frozen_path, bucket_name, no_delete, overwrite_all):
         print("Uploading: %s" % str(len(upload_pending)))
         for upload_file in upload_pending:
             filename, extn = os.path.splitext(upload_file)
+            print("\t%s%s" % (filename, extn))
 
             k = Key(bucket)
             k.key = upload_file
