@@ -123,11 +123,23 @@ def main():
         print('*** Freeze complete!')
         time.sleep(1)
 
-        print('*** Minifying results, including JS and CSS.')
+        print('*** Minifying HTML ...')
         subprocess.call(['java', '-jar', '.bin/htmlcompressor-1.5.3.jar', '--recursive',
                          '--compress-js', '--compress-css',                 # Compress CSS and JS
                          '--remove-script-attr', '--remove-style-attr',     # Remove unnecessary attributes
                          '.app_frozen/', '-o', '.app_frozen/'])
+
+        print('*** Minifying CSS ...')
+        subprocess.call(['find', '.app_frozen/', '-type', 'f', '-name', '*.css',
+                         '-exec', 'java', '-jar', '.bin/yuicompressor-2.4.8.jar',
+                         '--nomunge', '{}', '-o', '{}', ';'])
+
+        # Haven't tested yet
+#        print('*** Minifying JS ...')
+#        subprocess.call(['find', '.app_frozen/', '-type', 'f', '-name', '*.js',
+#                         '-exec', 'java', '-jar', '.bin/yuicompressor-2.4.8.jar',
+#                         '--nomunge', '{}', '-o', '{}', ';'])
+
 
         # Push the frozen apps above to S3, if we want.
         if args.deploy:
