@@ -15,9 +15,10 @@ import StringIO
 import subprocess
 import sys
 import time
+import IPython
 
 from base64 import b64encode
-from boto.s3.connection import S3Connection
+from boto.s3.connection import ProtocolIndependentOrdinaryCallingFormat, S3Connection
 from boto.s3.key import Key
 from ConfigParser import SafeConfigParser
 from flask_frozen import Freezer
@@ -153,7 +154,7 @@ def main():
 
             #### Connect to S3
             print('Connecting to AWS...\n')
-            conn = S3Connection()
+            conn = S3Connection(calling_format=ProtocolIndependentOrdinaryCallingFormat())
 
 
             # Deploy: (conn, frozen_path, remote_bucket)
@@ -178,6 +179,7 @@ def deploy_to_s3(conn, frozen_path, bucket_name, no_delete, overwrite_all):
     if not bucket:
         # TODO: Standardize errors. Should we die always? Raise()? Return?
         sys.stderr.write('Cannot find bucket!\n')
+        IPython.embed()
         sys.exit(1)
 
     # Data structures
